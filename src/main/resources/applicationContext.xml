@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+
+			http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+
+  <!-- 在web环境下,一定要手动配置 -->
+  <context:annotation-config />
+  <!-- 注解扫描包 -->
+  <context:component-scan base-package="com.xr" />
+  <!-- 加载资源文件 -->
+  <context:property-placeholder
+          location="classpath:db.properties,classpath:resource.properties" />
+  <!--导入shiro配置文件 -->
+  <import resource="classpath:application-shiro.xml"/>
+  <!-- 连接池 -->
+  <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+        init-method="init" destroy-method="close">
+    <property name="driverClassName" value="${db.driver}" />
+    <property name="url" value="${db.url}" />
+    <property name="username" value="${db.username}" />
+    <property name="password" value="${db.password}" />
+    <property name="filters" value="stat" />
+  </bean>
+  <!-- sessionFactory -->
+  <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="configLocation" value="classpath:mybatis-config.xml" />
+    <property name="typeAliasesPackage" value="com.yisurvey" />
+    <property name="mapperLocations" value="classpath:com/xr/mapper/*Mapper.xml" />
+  </bean>
+  <!-- 配置事务管理器 -->
+  <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+  </bean>
+  <!-- 事务模板 -->
+  <tx:advice id="advice" transaction-manager="transactionManager">
+    <tx:attributes>
+      <tx:method name="list*" read-only="true" />
+      <tx:method name="get*" read-only="true" />
+      <tx:method name="query*" read-only="true" />
+      <tx:method name="select*" read-only="true" />
+      <tx:method name="*" />
+    </tx:attributes>
+  </tx:advice>
+  <!-- 事务配置 -->
+  <aop:config>
+    <aop:pointcut expression="execution(* com.xr.service.*Service.*(..))"
+                  id="pointCut" />
+    <aop:advisor advice-ref="advice" pointcut-ref="pointCut" />
+  </aop:config>
+  <!-- <mybatis:scan base-package="com.yisurvey.base.mapper"/> -->
+  <!--导入配置文件 -->
+  <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.xr.mapper" />
+  </bean>
+</beans>
+

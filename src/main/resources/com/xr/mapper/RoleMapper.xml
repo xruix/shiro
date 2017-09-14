@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.xr.entity.Role">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
+        <result column="parent" property="parent" jdbcType="BIGINT"/>
+        <collection property="permissionList" ofType="com.xr.entity.Permission" columnPrefix="per_">
+            <id column="id" property="id"/>
+            <result column="authority_name" property="authorityName" jdbcType="VARCHAR"/>
+            <result column="expression" property="expression" jdbcType="VARCHAR"/>
+            <result column="desc" property="desc" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM tb_role
+        WHERE id = #{id,jdbcType=BIGINT};
+        <!--维护关系-->
+        DELETE FROM tb_role_permission
+        WHERE role_id=#{id}
+    </delete>
+    <insert id="insert" parameterType="com.xr.entity.Role" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_role (role_name, parent)
+        VALUES (#{roleName,jdbcType=VARCHAR}, #{parent,jdbcType=BIGINT});
+        <!--维护关系-->
+        INSERT INTO tb_role_permission(role_id, permission_id)
+        VALUES
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{id},#{item.id})
+        </foreach>
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.xr.entity.Role">
+        UPDATE tb_role
+        SET role_name = #{roleName,jdbcType=VARCHAR},
+            parent    = #{parent,jdbcType=BIGINT}
+        WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            role.id,
+            role.role_name,
+            role.parent,
+            per.id             AS per_id,
+            per.authority_name AS per_authority_name,
+            per.expression     AS per_expression,
+            per.`desc`         AS per_desc
+        FROM tb_role role LEFT JOIN tb_role_permission trp ON role.id = trp.role_id
+            LEFT JOIN tb_permission per ON trp.permission_id = per.id
+        WHERE role.id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            role.id,
+            role.role_name,
+            role.parent,
+            per.id             AS per_id,
+            per.authority_name AS per_authority_name,
+            per.expression     AS per_expression,
+            per.`desc`         AS per_desc
+        FROM tb_role role LEFT JOIN tb_role_permission trp ON role.id = trp.role_id
+            LEFT JOIN tb_permission per ON trp.permission_id = per.id
+    </select>
+</mapper>

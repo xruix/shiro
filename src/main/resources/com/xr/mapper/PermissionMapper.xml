@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.PermissionMapper">
+    <resultMap id="BaseResultMap" type="com.xr.entity.Permission">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="authority_name" property="authorityName" jdbcType="VARCHAR"/>
+        <result column="expression" property="expression" jdbcType="VARCHAR"/>
+        <result column="desc" property="desc" jdbcType="VARCHAR"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM tb_permission
+        WHERE id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.xr.entity.Permission" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_permission (authority_name, expression, `desc`)
+        VALUES (#{authorityName,jdbcType=VARCHAR}, #{expression,jdbcType=VARCHAR}, #{desc,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.xr.entity.Permission">
+        UPDATE tb_permission
+        SET authority_name = #{authorityName,jdbcType=VARCHAR},
+            expression     = #{expression,jdbcType=VARCHAR},
+            desc           = #{desc,jdbcType=VARCHAR}
+        WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            authority_name,
+            expression,`DESC`
+        FROM tb_permission
+        WHERE id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            authority_name,
+            expression,`DESC`
+        FROM tb_permission
+    </select>
+</mapper>

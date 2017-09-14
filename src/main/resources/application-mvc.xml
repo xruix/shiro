@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--开启注解扫描 -->
+    <context:component-scan base-package="com.xr.web"/>
+    <!--注解驱动 -->
+    <mvc:annotation-driven/>
+    <!--通知spring使用cglib而不是jdk的来生成代理方法 AOP可以拦截到Controller-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <!-- 注解支持 -->
+    <context:annotation-config/>
+    <!--避免IE执行AJAX时，返回JSON出现下载文件 -->
+    <bean id="mappingJackson2HttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=UTF-8</value>
+                <value>text/json;charset=UTF-8</value>
+                <value>application/json;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    <!--指定异常跳转的页面-->
+    <bean
+            class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.apache.shiro.authz.UnauthorizedException">
+                    /noPermission/unauthorized
+                </prop>
+                <prop key="org.apache.shiro.authz.UnauthenticatedException">
+                    /noPermission/unauthenticated
+                </prop>
+            </props>
+        </property>
+    </bean>
+    <!-- 指定数据转换管理器 -->
+    <!-- <mvc:annotation-driven
+        content-negotiation-manager="cnManager" />
+    favorPathExtension属性值默认为true 会根据请求路径来识别你的数据类型，入.html返回html。.json返回json
+    <bean id="cnManager"
+        class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+        <property name="favorPathExtension" value="false" />
+        <property name="defaultContentType" value="text/html" />
+        <property name="mediaTypes">
+            <map>
+                <entry key="xml" value="application/xml" />
+                <entry key="json" value="application/json" />
+                <entry key="*" value="application/json" />
+            </map>
+        </property>
+    </bean> -->
+    <!--导入主配置文件 -->
+    <import resource="classpath:applicationContext.xml"/>
+
+    <!--静态资源加载 -->
+    <mvc:default-servlet-handler/>
+    <!-- 拦截器 -->
+    <!--<mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/order/**"/>
+            <mvc:mapping path="/param/**"/>
+            <mvc:mapping path="/admin/**"/>
+            <mvc:mapping path="/pc/**"/>
+            <bean class="com.yisurvey.web.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>-->
+    <!--配置freeMarker的模板路径 -->
+    <bean
+            class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+        <!-- 配置freemarker的文件编码 -->
+        <property name="defaultEncoding" value="UTF-8"/>
+        <!-- 配置freemarker寻找模板的路径 -->
+        <property name="templateLoaderPath" value="/WEB-INF/views"/>
+    </bean>
+
+    <!--freemarker视图解析器 -->
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+        <!-- 是否在model自动把session中的attribute导入进去; -->
+        <property name="exposeSessionAttributes" value="true"/>
+        <!-- 配置逻辑视图自动添加的后缀名 -->
+        <property name="suffix" value=".ftl"/>
+        <!-- 配置视图的输出HTML的contentType -->
+        <property name="contentType" value="text/html;charset=UTF-8"/>
+    </bean>
+
+    <!--开启shiro注解-->
+
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+</beans>

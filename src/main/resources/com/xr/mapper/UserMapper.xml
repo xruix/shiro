@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.xr.entity.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="user_type" property="userType" jdbcType="INTEGER"/>
+        <result column="user_status" property="userStatus" jdbcType="INTEGER"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <collection property="roles" ofType="com.xr.entity.Role" column="role_id"
+                    select="com.xr.mapper.RoleMapper.selectByPrimaryKey"/>
+    </resultMap>
+
+    <sql id="columnSql">
+        id, name, user_type, user_status, password
+    </sql>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM tb_user
+        WHERE id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.xr.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_user (name, user_type, user_status)
+        VALUES (#{name,jdbcType=VARCHAR}, #{userType,jdbcType=INTEGER}, #{userStatus,jdbcType=INTEGER})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.xr.entity.User">
+        UPDATE tb_user
+        SET name        = #{name,jdbcType=VARCHAR},
+            user_type   = #{userType,jdbcType=INTEGER},
+            user_status = #{userStatus,jdbcType=INTEGER}
+        WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            u.id,
+            u.name,
+            u.user_type,
+            u.user_status,
+            tur.role_id
+        FROM tb_user u LEFT JOIN tb_user_role tur ON u.id = tur.user_id
+        WHERE u.id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="login" resultMap="BaseResultMap">
+        SELECT
+        <include refid="columnSql"/>
+        FROM tb_user
+        WHERE name=#{name}
+    </select>
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+            u.id,
+            u.name,
+            u.user_type,
+            u.user_status,
+            tur.role_id
+        FROM tb_user u LEFT JOIN tb_user_role tur ON u.id = tur.user_id
+        WHERE u.name = #{username,jdbcType=BIGINT}
+    </select>
+</mapper>
